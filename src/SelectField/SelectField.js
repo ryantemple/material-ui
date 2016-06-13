@@ -89,6 +89,10 @@ class SelectField extends Component {
      */
     menuStyle: PropTypes.object,
     /**
+     * If true, allow multiple options to be selected on the dropdwn
+     */
+    multiple: PropTypes.bool,
+    /**
      * Callback function fired when the select field loses focus.
      *
      * @param {object} event `blur` event targeting the select field.
@@ -142,6 +146,7 @@ class SelectField extends Component {
     autoWidth: false,
     disabled: false,
     fullWidth: false,
+    multiple: false,
   };
 
   static contextTypes = {
@@ -156,6 +161,7 @@ class SelectField extends Component {
       labelStyle,
       iconStyle,
       id,
+      multiple,
       underlineDisabledStyle,
       underlineFocusStyle,
       underlineStyle,
@@ -186,6 +192,7 @@ class SelectField extends Component {
         floatingLabelText={floatingLabelText}
         floatingLabelStyle={floatingLabelStyle}
         hintStyle={hintStyle}
+        multiLine={multiple}
         hintText={(!hintText && !floatingLabelText) ? ' ' : hintText}
         fullWidth={fullWidth}
         errorText={errorText}
@@ -203,6 +210,7 @@ class SelectField extends Component {
           style={Object.assign(styles.dropDownMenu, selectFieldRoot, menuStyle)}
           labelStyle={Object.assign(styles.label, labelStyle)}
           iconStyle={Object.assign(styles.icon, iconStyle)}
+          multiple={multiple}
           underlineStyle={styles.hideDropDownUnderline}
           autoWidth={autoWidth}
           value={value}

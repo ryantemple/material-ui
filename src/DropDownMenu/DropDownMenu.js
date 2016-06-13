@@ -5,6 +5,7 @@ import Menu from '../Menu/Menu';
 import ClearFix from '../internal/ClearFix';
 import Popover from '../Popover/Popover';
 import PopoverAnimationFromTop from '../Popover/PopoverAnimationVertical';
+import Chip from '../Chip/Chip';
 
 const anchorOrigin = {
   vertical: 'top',
@@ -17,6 +18,9 @@ function getStyles(props, context) {
   const palette = context.muiTheme.baseTheme.palette;
   const accentColor = context.muiTheme.dropDownMenu.accentColor;
   return {
+    chip: {
+      marginRight: '5px',
+    },
     control: {
       cursor: disabled ? 'not-allowed' : 'pointer',
       height: '100%',
@@ -47,7 +51,8 @@ function getStyles(props, context) {
     root: {
       display: 'inline-block',
       fontSize: spacing.desktopDropDownMenuFontSize,
-      height: spacing.desktopSubheaderHeight,
+      // TODO is this the right calculation to do
+      height: props.multiple ? 2 * spacing.desktopSubheaderHeight : spacing.desktopSubheaderHeight,
       fontFamily: context.muiTheme.baseTheme.fontFamily,
       outline: 'none',
       position: 'relative',
@@ -119,6 +124,10 @@ class DropDownMenu extends Component {
      */
     menuStyle: PropTypes.object,
     /**
+     * If true, allow multiple options to be selected on the dropdwn
+     */
+    multiple: PropTypes.bool,
+    /**
      * Callback function fired when a menu item is clicked, other than the one currently selected.
      *
      * @param {object} event TouchTap event targeting the menu item that was clicked.
@@ -150,6 +159,7 @@ class DropDownMenu extends Component {
     disabled: false,
     openImmediately: false,
     maxHeight: 500,
+    multiple: false,
   };
 
   static contextTypes = {
@@ -226,13 +236,15 @@ class DropDownMenu extends Component {
   };
 
   handleItemTouchTap = (event, child, index) => {
-    this.setState({
-      open: false,
-    }, () => {
-      if (this.props.onChange) {
-        this.props.onChange(event, index, child.props.value);
-      }
-    });
+    if(!this.props.multiple){
+      this.setState({
+        open: false,
+      })
+    }
+    if(this.props.onChange){
+      this.props.onChange(event, index, child.props.value);
+    }
+
   };
 
   render() {
@@ -260,11 +272,22 @@ class DropDownMenu extends Component {
     const {prepareStyles} = this.context.muiTheme;
     const styles = getStyles(this.props, this.context);
 
-    let displayValue = '';
+    let displayValue = [];
     React.Children.forEach(children, (child) => {
-      if (value === child.props.value) {
-        // This will need to be improved (in case primaryText is a node)
-        displayValue = child.props.label || child.props.primaryText;
+      if(!this.props.multiple){
+        if (value === child.props.value) {
+          // This will need to be improved (in case primaryText is a node)
+          displayValue = child.props.label || child.props.primaryText;
+        }
+      }
+      else{
+        if(value.indexOf(child.props.value) !== -1){
+          displayValue.push(
+            <Chip style={styles.chip}
+              onRequestDelete={this.props.onChange}>
+              {child.props.label || child.props.primaryText}
+            </Chip>)
+        }
       }
     });
 
@@ -288,7 +311,9 @@ class DropDownMenu extends Component {
           <div
             style={prepareStyles(Object.assign({}, styles.label, open && styles.labelWhenOpen, labelStyle))}
           >
-            {displayValue}
+            <div style={{ display: 'flex', flexWrap: 'wrap-reverse' }}>
+              {displayValue}
+            </div>
           </div>
           <DropDownArrow style={Object.assign({}, styles.icon, iconStyle)} />
           <div style={prepareStyles(Object.assign({}, styles.underline, underlineStyle))} />
